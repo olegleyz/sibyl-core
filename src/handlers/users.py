@@ -136,8 +136,8 @@ def delete_user(event: Dict) -> Dict:
         logger.error(f"Error deleting user: {str(e)}")
         return create_response(400, {'error': str(e)})
 
-def lambda_handler(event: Dict, context: LambdaContext) -> Dict:
-    """Lambda handler for user management"""
+def handler(event: Dict, context: LambdaContext) -> Dict:
+    """Main handler for all user CRUD operations"""
     try:
         http_method = event['httpMethod']
         path = event['path']
@@ -159,5 +159,5 @@ def lambda_handler(event: Dict, context: LambdaContext) -> Dict:
         else:
             return create_response(404, {'error': 'Not found'})
     except Exception as e:
-        logger.error(f"Error in lambda_handler: {str(e)}")
+        logger.error(f"Error in handler: {str(e)}")
         return create_response(500, {'error': 'Internal server error'})
