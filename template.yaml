@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: SAM template for Sibyl AI Assistant
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Environment name
+
+Conditions:
+  IsProd: !Equals [!Ref Environment, 'prod']
+  IsDev: !Equals [!Ref Environment, 'dev']
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: !If [IsProd, 30, 60]
+    MemorySize: !If [IsProd, 256, 128]
+    Environment:
+      Variables:
+        TABLE_NAME: !Sub 'sibyl-users-${Environment}'
+        ENVIRONMENT: !Ref Environment
+
+Resources:
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'sibyl-users-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: uuid
+          AttributeType: S
+        - AttributeName: telegram_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: uuid
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: !Sub 'TelegramIdIndex-${Environment}'
+          KeySchema:
+            - AttributeName: telegram_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  UsersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'sibyl-users-${Environment}'
+      CodeUri: src/
+      Handler: handlers.users.handler
+      Runtime: python3.12
+      Environment:
+        Variables:
+          LOG_LEVEL: !If [IsProd, 'INFO', 'DEBUG']
+          TABLE_NAME: !Sub 'sibyl-users-${Environment}'
+          ENVIRONMENT: !Ref Environment
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      AutoPublishAlias: !Ref Environment
+      DeploymentPreference:
+        Type: !If [IsProd, 'Linear10PercentEvery1Minute', 'AllAtOnce']
+      Events:
+        CreateUser:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /users
+            Method: POST
+        GetUserByTelegramId:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /users/telegram/{telegram_id}
+            Method: GET
+        UpdateUserByTelegramId:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /users/telegram/{telegram_id}
+            Method: PUT
+        GetUserById:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /users/{id}
+            Method: GET
+        UpdateUser:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /users/{id}
+            Method: PUT
+        DeleteUser:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /users/{id}
+            Method: DELETE
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub 'sibyl-core-${Environment}'
+      StageName: !Ref Environment
+      Auth:
+        ResourcePolicy:
+          CustomStatements:
+            - Effect: Allow
+              Action: execute-api:Invoke
+              Resource: execute-api:/*/*/*
+              Principal: 
+                AWS: arn:aws:iam::557690606021:role/sibyl-telegram-interface-MessageProcessorFunctionRo-VrQqmX2guQ2j
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          Description: Usage plan for user service API
+          Quota:
+            Limit: 10000
+            Period: MONTH
+          Throttle:
+            BurstLimit: 100
+            RateLimit: 50
+      Tags:
+        Environment: !Ref Environment
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
+    Export:
+      Name: !Sub '${AWS::StackName}-${Environment}-ApiEndpoint'
+  UsersTableName:
+    Description: DynamoDB table name
+    Value: !Ref UsersTable
+  UsersTableArn:
+    Description: DynamoDB table ARN
+    Value: !GetAtt UsersTable.Arn
