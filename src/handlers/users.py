@@ -31,6 +31,15 @@ def create_user(event: Dict) -> Dict:
     """Create a new user"""
     try:
         body = json.loads(event['body'])
+        
+        # Check if user with same telegram_id exists
+        if 'telegram_id' in body:
+            existing_user = dynamodb.get_item_by_telegram_id(body['telegram_id'])
+            if existing_user:
+                return create_response(409, {
+                    'error': f"User with telegram_id {body['telegram_id']} already exists"
+                })
+        
         user = User(
             **body,
             created_at=datetime.utcnow().isoformat(),

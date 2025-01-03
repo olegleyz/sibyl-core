@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+  UsersTableArn:
+    Type: String
+  UsersTableName:
+    Type: String
+
+Resources:
+  UsersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'sibyl-users-${Environment}'
+      CodeUri: ../../src/
+      Handler: handlers.users.handler
+      Runtime: python3.12
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref UsersTableName
+          ENVIRONMENT: !Ref Environment
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Tags:
+        Environment: !Ref Environment
+
+Outputs:
+  UsersFunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt UsersFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-${Environment}-UsersFunctionArn'

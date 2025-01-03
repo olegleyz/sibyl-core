@@ -1,78 +1,108 @@
-# Sibyl Core Service
+# Sibyl Core
 
-Core backend service for [Sibyl Numerology Bot](https://meet-sibyl.com), providing REST APIs for user management and AI agent interactions.
+Backend service for the Sibyl Numerology Bot, built with AWS SAM (Serverless Application Model).
 
-## Overview
+## Project Structure
 
-This service is built using AWS SAM (Serverless Application Model) and provides the following functionalities:
-- User profile management
-- Integration with Telegram interface
-- Access control for AI agents
-- Multi-environment support (dev/prod)
+```
+sibyl-core/
+├── model/                    # Infrastructure as Code
+│   ├── api/                  # OpenAPI Specification
+│   │   ├── apiSkeleton.yaml  # Main OpenAPI spec file
+│   │   ├── paths/           # API endpoint definitions
+│   │   │   └── users/       # User-related endpoints
+│   │   ├── schemas/         # API schemas
+│   │   └── openapi.yaml     # Generated OpenAPI spec
+│   └── templates/           # CloudFormation templates
+│       ├── api.yaml         # API Gateway configuration
+│       ├── database.yaml    # DynamoDB tables
+│       └── lambda.yaml      # Lambda functions
+├── src/                     # Python source code
+│   ├── handlers/           # Lambda handlers
+│   ├── models/            # Data models
+│   ├── services/          # Service layer
+│   └── requirements.txt   # Python dependencies
+├── template.yaml           # Main SAM template
+├── samconfig.toml         # SAM configuration
+└── Makefile              # Build and deployment commands
+```
 
-## Architecture
+## Features
 
-The service uses the following AWS services:
-- API Gateway for REST endpoints
-- Lambda for serverless compute
+- User Management API with CRUD operations
+- AWS IAM Authentication
 - DynamoDB for data storage
-- IAM for access control
-- CloudFormation for infrastructure as code
+- Structured OpenAPI specification
+- Modular CloudFormation templates
 
-## API Endpoints
+## Prerequisites
 
-### Users
-- `POST /users` - Create a new user
-- `GET /users/{id}` - Get user by UUID
-- `PUT /users/{id}` - Update user by UUID
-- `GET /users/telegram/{telegram_id}` - Get user by Telegram ID
-- `PUT /users/telegram/{telegram_id}` - Update user by Telegram ID
+- AWS CLI configured with appropriate credentials
+- Node.js and npm (for Swagger CLI)
+- Python 3.12
+- AWS SAM CLI
 
-## Security
+## Setup
 
-The API is secured using:
-- Resource-based policies for API Gateway
-- Environment-specific access controls
-- IAM role-based authentication
+1. Install dependencies:
+```bash
+make install
+```
+
+This will:
+- Install Swagger CLI for OpenAPI bundling
+- Install Python dependencies
 
 ## Development
 
-### Prerequisites
-- AWS SAM CLI
-- Python 3.9+
-- AWS credentials configured
+The project uses a modular approach:
+- OpenAPI specification is split into multiple files for better maintainability
+- CloudFormation templates are separated by resource type
+- Python code is organized by functionality
 
-### Local Development
+### API Documentation
+
+The API specification is defined in `model/api/apiSkeleton.yaml` and related files. The bundled specification is generated during build.
+
+### Authentication
+
+All API endpoints use AWS IAM authentication. Access is controlled through IAM policies.
+
+## Building and Deployment
+
+1. Build the project:
 ```bash
-# Install dependencies
-pip install -r src/requirements.txt
-
-# Start local API
-sam local start-api
-
-# Run tests
-python -m pytest tests/
+make build
 ```
 
-### Deployment
-```bash
-# Deploy to dev
-sam deploy --config-env dev
+This will:
+- Bundle the OpenAPI specification
+- Validate the SAM template
+- Build the Lambda functions
 
-# Deploy to prod
-sam deploy --config-env prod
+2. Deploy to AWS:
+```bash
+make deploy REGION=us-east-1
 ```
 
-## Environment Variables
-- `ENVIRONMENT` - Deployment environment (dev/prod)
-- `TABLE_NAME` - DynamoDB table name
+## Clean Up
+
+Remove build artifacts:
+```bash
+make clean
+```
+
+This will remove:
+- Generated OpenAPI specification
+- SAM build artifacts
+- Python cache files
 
 ## Contributing
-Please follow these steps:
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Create a pull request
+
+1. Create a feature branch
+2. Make your changes
+3. Submit a pull request
 
 ## License
-Proprietary - All rights reserved
+
+[Add your license information here]

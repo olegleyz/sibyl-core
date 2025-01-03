@@ -1,0 +1,40 @@
+summary: Create a new user
+security:
+  - AWS_IAM: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '../../schemas/user.yaml'
+responses:
+  '201':
+    description: User created successfully
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/user.yaml'
+  '409':
+    description: User with the same telegram_id already exists
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/error.yaml'
+  '400':
+    description: Invalid request
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/error.yaml'
+  '500':
+    description: Internal server error
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/error.yaml'
+x-amazon-apigateway-integration:
+  uri: 
+    Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UsersLambdaArn}/invocations
+  passthroughBehavior: when_no_match
+  httpMethod: POST
+  type: aws_proxy

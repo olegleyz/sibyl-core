@@ -1,0 +1,32 @@
+summary: Get user by Telegram ID
+parameters:
+  - name: telegram_id
+    in: path
+    required: true
+    schema:
+      type: string
+responses:
+  '200':
+    description: User found
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/user.yaml'
+  '404':
+    description: User not found
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/error.yaml'
+  '400':
+    description: Invalid request
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/error.yaml'
+x-amazon-apigateway-integration:
+  uri: 
+    Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UsersLambdaArn}/invocations
+  passthroughBehavior: when_no_match
+  httpMethod: POST
+  type: aws_proxy

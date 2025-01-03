@@ -1,0 +1,61 @@
+openapi: 3.0.0
+info:
+  title: Sibyl Core API
+  version: '1.0'
+  description: Core API for Sibyl Numerology Bot
+
+x-amazon-apigateway-cors:
+  allowOrigins:
+    - '*'
+  allowMethods:
+    - POST
+    - GET
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowHeaders:
+    - Content-Type
+    - Authorization
+  maxAge: 3600
+
+x-amazon-apigateway-policy:
+  Version: '2012-10-17'
+  Statement:
+    - Effect: Allow
+      Principal:
+        AWS: 'arn:aws:iam::557690606021:root'
+      Action: execute-api:Invoke
+      Resource: '*'
+
+paths:
+  /users:
+    post:
+      $ref: 'paths/users/create.yaml'
+  /users/{id}:
+    get:
+      $ref: 'paths/users/getById.yaml'
+    put:
+      $ref: 'paths/users/updateById.yaml'
+    delete:
+      $ref: 'paths/users/deleteById.yaml'
+  /users/telegram/{telegram_id}:
+    get:
+      $ref: 'paths/users/getByTelegramId.yaml'
+    put:
+      $ref: 'paths/users/updateByTelegramId.yaml'
+
+components:
+  schemas:
+    User:
+      $ref: 'schemas/user.yaml'
+    Error:
+      $ref: 'schemas/error.yaml'
+  securitySchemes:
+    AWS_IAM:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: awsSigv4
+
+security:
+  - AWS_IAM: []

@@ -1,0 +1,27 @@
+type: object
+properties:
+  uuid:
+    type: string
+    format: uuid
+  telegram_id:
+    type: string
+  first_name:
+    type: string
+  last_name:
+    type: string
+  date_of_birth:
+    type: string
+    format: date
+  profile:
+    type: string
+  reading:
+    type: object
+    additionalProperties: true
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time
+required:
+  - telegram_id
