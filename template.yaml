@@ -138,6 +138,11 @@ Outputs:
     Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
     Export:
       Name: !Sub '${AWS::StackName}-${Environment}-ApiEndpoint'
+  ApiId:
+    Description: API Gateway ID
+    Value: !Ref ApiGateway
+    Export:
+      Name: !Sub '${AWS::StackName}-${Environment}-ApiId'
   UsersTableName:
     Description: DynamoDB table name
     Value: !Ref UsersTable
