@@ -1,0 +1,89 @@
+name: Generate Python SDK
+
+on:
+  push:
+    paths:
+      - 'model/api/**'  # Trigger when any file in the OpenAPI spec folder changes
+      - '.github/workflows/**'  # Trigger on workflow file changes
+      - 'Makefile'  # Trigger when the Makefile changes
+
+jobs:
+  generate-sdk:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository containing OpenAPI spec
+      - name: Checkout OpenAPI Definition Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Install dependencies
+      - name: Install Swagger CLI and Python
+        run: |
+          npm install -g @apidevtools/swagger-cli
+          pip install -r src/requirements.txt
+
+      # Step 3: Build OpenAPI spec using Makefile
+      - name: Build OpenAPI Spec
+        run: make build-api
+
+      # Step 4: Validate that the OpenAPI spec file was built successfully
+      - name: Validate OpenAPI Spec Output
+        run: |
+          if [ ! -f model/api/openapi.yaml ]; then
+            echo "Error: openapi.yaml file not found."
+            exit 1
+          fi
+
+      # Step 5: Setup Java
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install OpenAPI Generator
+        run: |
+          wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/6.6.0/openapi-generator-cli-6.6.0.jar -O openapi-generator-cli.jar
+
+      # Step 6: Clone the Python SDK Repository
+      - name: Checkout SDK Repository
+        uses: actions/checkout@v3
+        with:
+          repository: olegleyz/sibyl-core-python-sdk
+          path: python-sdk-repo
+          token: ${{ secrets.SDK_REPO_PAT }}
+
+      # Step 7: Generate the Python SDK
+      - name: Generate Python SDK
+        run: |
+          java --add-opens=java.base/java.util=ALL-UNNAMED \
+            --add-opens=java.base/java.lang=ALL-UNNAMED \
+            -jar openapi-generator-cli.jar generate \
+            -i model/api/openapi.yaml \
+            -g python \
+            -o python-sdk-repo \
+            --additional-properties=packageName=sibyl_core_sdk,pythonVersion=3.10
+
+      # Step 8: Commit and Push Changes to the SDK Repository
+      - name: Commit and Push SDK Changes
+        run: |
+          cd python-sdk-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Check if there are any changes to commit
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          # Add and commit changes
+          git add -A
+          git status
+          git commit -m "Update Python SDK from OpenAPI spec ($(date -u +"%Y-%m-%d %H:%M:%S UTC"))"
+          
+          # Set remote URL with token authentication
+          git remote set-url origin "https://${{ secrets.SDK_REPO_PAT }}@github.com/olegleyz/sibyl-core-python-sdk.git"
+          
+          # Push changes
+          git push origin HEAD
