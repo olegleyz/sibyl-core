@@ -43,7 +43,7 @@ jobs:
 
       - name: Install OpenAPI Generator
         run: |
-          wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/6.6.0/openapi-generator-cli-6.6.0.jar -O openapi-generator-cli.jar
+          wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.10.0/openapi-generator-cli-7.10.0.jar -O openapi-generator-cli.jar
 
       # Step 6: Clone the Python SDK Repository
       - name: Checkout SDK Repository
@@ -63,20 +63,6 @@ jobs:
             -g python \
             -o python-sdk-repo \
             --additional-properties=packageName=sibyl_core_sdk,pythonVersion=3.12
-
-      # Update requirements.txt with newer typing-extensions version
-      - name: Update Requirements
-        run: |
-          cd python-sdk-repo
-          # Create backup of original requirements
-          cp requirements.txt requirements.txt.bak
-          # Update typing-extensions version using platform-independent approach
-          awk '!/typing_extensions/ { print } /typing_extensions/ { print "typing_extensions >= 4.6.2" }' requirements.txt.bak > requirements.txt
-          # Clean up backup file
-          rm requirements.txt.bak
-          # Show the changes
-          echo "Updated requirements.txt contents:"
-          cat requirements.txt
 
       # Step 8: Commit and Push Changes to the SDK Repository
       - name: Commit and Push SDK Changes
