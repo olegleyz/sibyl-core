@@ -72,6 +72,8 @@ jobs:
           cp requirements.txt requirements.txt.bak
           # Update typing-extensions version using platform-independent approach
           awk '!/typing_extensions/ { print } /typing_extensions/ { print "typing_extensions >= 4.6.2" }' requirements.txt.bak > requirements.txt
+          # Clean up backup file
+          rm requirements.txt.bak
           # Show the changes
           echo "Updated requirements.txt contents:"
           cat requirements.txt
