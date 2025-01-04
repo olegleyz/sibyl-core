@@ -70,9 +70,8 @@ jobs:
           cd python-sdk-repo
           # Create backup of original requirements
           cp requirements.txt requirements.txt.bak
-          # Update typing-extensions version
-          sed -i.bak '/typing-extensions/c\typing-extensions>=4.6.2' requirements.txt
-          rm requirements.txt.bak
+          # Update typing-extensions version using platform-independent approach
+          awk '!/typing_extensions/ { print } /typing_extensions/ { print "typing_extensions >= 4.6.2" }' requirements.txt.bak > requirements.txt
           # Show the changes
           echo "Updated requirements.txt contents:"
           cat requirements.txt
