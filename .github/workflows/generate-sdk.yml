@@ -64,6 +64,19 @@ jobs:
             -o python-sdk-repo \
             --additional-properties=packageName=sibyl_core_sdk,pythonVersion=3.12
 
+      # Update requirements.txt with newer typing-extensions version
+      - name: Update Requirements
+        run: |
+          cd python-sdk-repo
+          # Create backup of original requirements
+          cp requirements.txt requirements.txt.bak
+          # Update typing-extensions version
+          sed -i.bak '/typing-extensions/c\typing-extensions>=4.6.2' requirements.txt
+          rm requirements.txt.bak
+          # Show the changes
+          echo "Updated requirements.txt contents:"
+          cat requirements.txt
+
       # Step 8: Commit and Push Changes to the SDK Repository
       - name: Commit and Push SDK Changes
         run: |
