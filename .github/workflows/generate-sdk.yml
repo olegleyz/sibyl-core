@@ -62,7 +62,7 @@ jobs:
             -i model/api/openapi.yaml \
             -g python \
             -o python-sdk-repo \
-            --additional-properties=packageName=sibyl_core_sdk,pythonVersion=3.10
+            --additional-properties=packageName=sibyl_core_sdk,pythonVersion=3.12
 
       # Step 8: Commit and Push Changes to the SDK Repository
       - name: Commit and Push SDK Changes
