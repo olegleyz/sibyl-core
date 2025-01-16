@@ -29,7 +29,7 @@ build: build-api
 
 # Deploy
 deploy:
-	sam deploy --region $(REGION)
+	sam deploy --region $(REGION) --profile admin
 
 # Clean build artifacts
 clean:

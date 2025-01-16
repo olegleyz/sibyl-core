@@ -10,6 +10,8 @@ from models.user import User, UserCreate
 from services.dynamodb import DynamoDBService
 
 logger = Logger()
+logger = logging.getLogger()
+logger.setLevel(logging.INFO) 
 app = APIGatewayRestResolver()
 dynamodb = DynamoDBService()
 

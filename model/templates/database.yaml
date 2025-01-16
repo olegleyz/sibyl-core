@@ -35,9 +35,9 @@ Outputs:
     Description: DynamoDB table name
     Value: !Ref UsersTable
     Export:
-      Name: !Sub '${AWS::StackName}-${Environment}-UsersTableName'
+      Name: !Sub 'UsersTableName-${Environment}'
   UsersTableArn:
     Description: DynamoDB table ARN
     Value: !GetAtt UsersTable.Arn
     Export:
-      Name: !Sub '${AWS::StackName}-${Environment}-UsersTableArn'
+      Name: !Sub 'UsersTableArn-${Environment}'
